@@ -1,0 +1,9 @@
+[package]
+name = "skia-word-spacing-bug"
+version = "1.0.0"
+authors = ["conor@canva.com, roman@canva.com"]
+edition = "2018"
+
+[dependencies]
+skia-safe = { version = "0.63.0", features = ["textlayout"]  }
+png = "0.16.8"
