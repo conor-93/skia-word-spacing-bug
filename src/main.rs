@@ -1,5 +1,7 @@
-use skia_safe::textlayout::{FontCollection, ParagraphBuilder, ParagraphStyle, TextStyle, TypefaceFontProvider};
-use skia_safe::{Color, Data, FontMgr, FontStyle, ISize, Surface, Typeface};
+use skia_safe::textlayout::{
+    FontCollection, ParagraphBuilder, ParagraphStyle, TextStyle, TypefaceFontProvider,
+};
+use skia_safe::{op, scalar, Color, Data, Font, FontMgr, FontStyle, ISize, Surface, Typeface};
 use std::fs::File;
 use std::io::{Read, Write};
 use std::path::Path;
@@ -7,19 +9,19 @@ use std::path::Path;
 // == Execution ==
 
 fn main() {
-    all_without_slant();
     all_with_slant();
     alternating_slant();
     twice_alternating_slant();
     alternating_slant_within_word();
     alternating_weight();
+    alternating_size();
 }
 
 // == Scenarios ==
 
 // Works as expected.
 fn all_without_slant() {
-    let ( surface, _regular_style, mut paragraph_builder) = setup_paragraph_with_word_spacing();
+    let (surface, _regular_style, mut paragraph_builder) = setup_paragraph_with_word_spacing();
 
     paragraph_builder.add_text("a b c d e f g");
 
@@ -28,7 +30,7 @@ fn all_without_slant() {
 
 // Works as expected
 fn all_with_slant() {
-    let ( surface, regular_style, mut paragraph_builder) = setup_paragraph_with_word_spacing();
+    let (surface, regular_style, mut paragraph_builder) = setup_paragraph_with_word_spacing();
 
     let mut italic_style = regular_style.clone();
     italic_style.set_font_style(FontStyle::italic());
@@ -40,7 +42,7 @@ fn all_with_slant() {
 
 // BUG: No word spacing applied between 'b' and 'c'
 fn alternating_slant() {
-    let ( surface, regular_style, mut paragraph_builder) = setup_paragraph_with_word_spacing();
+    let (surface, regular_style, mut paragraph_builder) = setup_paragraph_with_word_spacing();
 
     paragraph_builder.add_text("a b ");
 
@@ -54,7 +56,7 @@ fn alternating_slant() {
 
 // BUG: No word spacing applied between 'b' and 'c', and again not between 'e' and 'f'
 fn twice_alternating_slant() {
-    let ( surface, regular_style, mut paragraph_builder) = setup_paragraph_with_word_spacing();
+    let (surface, regular_style, mut paragraph_builder) = setup_paragraph_with_word_spacing();
 
     paragraph_builder.add_text("a b ");
 
@@ -71,7 +73,7 @@ fn twice_alternating_slant() {
 
 // Works fine if the slant change happens within a word, not at a word boundary.
 fn alternating_slant_within_word() {
-    let ( surface, regular_style, mut paragraph_builder) = setup_paragraph_with_word_spacing();
+    let (surface, regular_style, mut paragraph_builder) = setup_paragraph_with_word_spacing();
 
     paragraph_builder.add_text("Firs");
 
@@ -85,7 +87,7 @@ fn alternating_slant_within_word() {
 
 // BUG: Also affects font weight; again no word spacing applied between 'b' and 'c'
 fn alternating_weight() {
-    let ( surface, regular_style, mut paragraph_builder) = setup_paragraph_with_word_spacing();
+    let (surface, regular_style, mut paragraph_builder) = setup_paragraph_with_word_spacing();
 
     paragraph_builder.add_text("a b ");
 
@@ -95,6 +97,20 @@ fn alternating_weight() {
     paragraph_builder.add_text(" c d e f g");
 
     resolve(paragraph_builder, surface, "alternating_weight");
+}
+
+// BUG: Also affects font size; again no word spacing applied between 'b' and 'c'
+fn alternating_size() {
+    let (surface, regular_style, mut paragraph_builder) = setup_paragraph_with_word_spacing();
+
+    paragraph_builder.add_text("a b ");
+
+    let mut larger_style = regular_style.clone();
+    larger_style.set_font_size(32.0);
+    paragraph_builder.push_style(&larger_style);
+    paragraph_builder.add_text(" c d e f g");
+
+    resolve(paragraph_builder, surface, "alternating_size");
 }
 
 // == Helpers ==
